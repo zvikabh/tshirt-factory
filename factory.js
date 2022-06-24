@@ -15,6 +15,7 @@ var state;
 var bins = [[], [], [], [], [], [], [], [], [], []];
 var curInstruction;
 var curParam;
+var isStopRequested = false;
 
 // Runs only once, sets up the HTML.
 function setup() {
@@ -130,41 +131,45 @@ function pushBin(bin, color) {
 
 function onStep() {
   try {
-    switch (state) {
-      case 0:  // Load
-        curInstruction = popBin(1);
-        curParam = popBin(1);
-        state = 1;  // Execute
-        populateHtmlStatement();
-        break;
-
-      case 1: // Execute
-        executeCurStatement();
-        if (state != 3) {
-          state = 2;  // Recycle
-        }
-        populateHtmlStatement();
-        break;
-
-      case 2:  // Recycle
-        pushBin(2, curInstruction);
-        pushBin(2, curParam);
-        curInstruction = undefined;
-        curParam = undefined;
-        state = 0;
-        ++nStep;
-        populateHtmlStatement();
-        break;
-
-      case 3:  // Stopped
-      case 4:  // Error
-        populateHtmlStatement();
-        break;
-    }
+    advanceOneStep();
   } catch (err) {
     reportMsg('Aborted: ' + err);
     state = 4;
     populateHtmlStatement();
+  }
+}
+
+function advanceOneStep() {
+  switch (state) {
+    case 0:  // Load
+      curInstruction = popBin(1);
+      curParam = popBin(1);
+      state = 1;  // Execute
+      populateHtmlStatement();
+      break;
+
+    case 1: // Execute
+      executeCurStatement();
+      if (state != 3) {
+        state = 2;  // Recycle
+      }
+      populateHtmlStatement();
+      break;
+
+    case 2:  // Recycle
+      pushBin(2, curInstruction);
+      pushBin(2, curParam);
+      curInstruction = undefined;
+      curParam = undefined;
+      state = 0;
+      ++nStep;
+      populateHtmlStatement();
+      break;
+
+    case 3:  // Stopped
+    case 4:  // Error
+      populateHtmlStatement();
+      break;
   }
 }
 
@@ -209,4 +214,32 @@ function executeCurStatement() {
       populateHtmlBins();
       return;
   }
+}
+
+function onRun() {
+  $('#button-run').parent().hide();
+  $('#button-stop').parent().show();
+  if (isStopRequested) {
+    $('#button-run').parent().show();
+    $('#button-stop').parent().hide();
+    isStopRequested = false;
+    return;
+  }
+  try {
+    advanceOneStep();
+  } catch (err) {
+    reportMsg('Aborted: ' + err);
+    state = 4;
+    populateHtmlStatement();
+  }
+  if (state < 3) {
+    setTimeout(onRun, 250);
+  } else {
+    $('#button-run').parent().show();
+    $('#button-stop').parent().hide();
+  }
+}
+
+function onStop() {
+  isStopRequested = true;
 }
