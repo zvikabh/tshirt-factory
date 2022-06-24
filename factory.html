@@ -1,0 +1,67 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Language" content="iw-il">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width" />
+  <title>T-Shirt Factory</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&family=Roboto:wght@300;700&display=swap" rel="stylesheet">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="factory.css" />
+  <script src="factory.js"></script>
+</head>
+<body>
+<div id="main">
+  <div class="title">T-Shirt Factory</div>
+  <div id="input-row">
+    <label id="input-prompt" for="input-textbox">Input:</label>
+    <div id="input-textbox-wrapper">
+      <input id="input-textbox" type="text" name="input">
+    </div>
+    <div id="buttons-wrapper">
+      <div class="button">
+        <input id="button-reload" type="submit" value="⟳" onclick="onReload()">
+      </div>
+      <div class="button">
+        <input id="button-step" type="submit" value="▶" onclick="onStep()">
+      </div>
+      <!-- <div class="button">
+        <input id="button-run" type="submit" value="▶▶">
+      </div> -->
+    </div>
+  </div>
+  <div id="termination-msg"></div>
+  <div id="curr-statement-row">
+    <div class="filler"></div>
+    <div id="curr-statement-wrapper">
+      <div class="curr-statement-header"
+           style="grid-area: 1 / 1 / auto / auto;">
+        State
+      </div>
+      <div class="curr-statement-header"
+           style="grid-area: 1 / 2 / auto / auto;">
+        Instruction
+      </div>
+      <div class="curr-statement-header"
+           style="grid-area: 1 / 3 / auto / auto;">
+        Parameter
+      </div>
+      <div class="curr-statement-shirt-wrapper" id="curr-state"
+           style="grid-area: 2 / 1 / auto / auto;">
+      </div>
+      <div class="curr-statement-shirt-wrapper" id="curr-instruction-wrapper"
+           style="grid-area: 2 / 2 / auto / auto;">
+      </div>
+      <div class="curr-statement-shirt-wrapper" id="curr-param-wrapper"
+           style="grid-area: 2 / 3 / auto / auto;">
+      </div>
+    </div>
+    <div class="filler"></div>
+  </div>
+  <div id="bins"></div>
+</div>
+</body>
+</html>

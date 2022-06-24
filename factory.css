@@ -1,0 +1,131 @@
+html, body {
+  margin: 0;
+  height: 100%;
+  font-family: 'Roboto Condensed', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  background-color: #d6d6d6;
+  color: #000;
+}
+#main {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 700px;
+  margin: auto;
+}
+.title {
+  text-align: center;
+  font-size: 20pt;
+  padding: 10px 0;
+  font-weight: 700;
+  font-family: 'Roboto', sans-serif;
+}
+#input-row {
+  padding: 4px 0;
+  display: flex;
+  flex-direction: row;
+}
+#input-textbox-wrapper {
+  flex-grow: 1;
+  padding: 0 20px;
+}
+#input-textbox {
+  width: 100%;
+}
+#buttons-wrapper {
+  display: flex;
+  flex-direction: row;
+}
+.button {
+  width: 45px;
+  height: 20px;
+  padding: 0 3px;
+}
+.button input {
+  width: 100%;
+  height: 100%;
+}
+#termination-msg {
+  padding: 4px 0;
+  font-weight: 700;
+}
+#curr-statement-row {
+  display: flex;
+  flex-direction: row;
+}
+.filler {
+  flex-grow: 1;
+}
+#curr-statement-wrapper {
+  width: 200px;
+  padding: 4px 0;
+  text-align: center;
+  display: grid;
+  justify-items: center;
+  align-items: center;
+  column-gap: 10px;
+  row-gap: 0;
+}
+.curr-statement-header {
+  font-size: 14px;
+}
+#bins {
+  padding: 20px 0 4px 0;
+  display: grid;
+  justify-items: center;
+  column-gap: 5px;
+  row-gap: 5px;
+}
+.bin-header {
+  text-align: center;
+  font-size: 14px;
+}
+.bin {
+}
+.shirt {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-content: center;
+  width: 35px;
+  height: 30px;
+  padding: 0 0;
+  margin: 4px 4px;
+  text-align: center;
+  border-radius: 3px;
+}
+.shirt0 {
+  background-color: #fff;
+}
+.shirt1 {
+  background-color: #888;
+}
+.shirt2 {
+  background-color: #8102b3;
+  color: #fff;
+}
+.shirt3 {
+  background-color: #2040ff;
+  color: #fff;
+}
+.shirt4 {
+  background-color: #00b71e;
+}
+.shirt5 {
+  background-color: #e0e600;
+}
+.shirt6 {
+  background-color: #ffa700;
+}
+.shirt7 {
+  background-color: #ff3b3b;
+}
+.shirt8 {
+  background-color: #aa5500;
+  color: #fff;
+}
+.shirt9 {
+  background-color: #000;
+  color: #fff;
+}
