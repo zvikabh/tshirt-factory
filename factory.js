@@ -6,9 +6,11 @@ const STATE_NAMES = {
   0: 'Load',
   1: 'Execute',
   2: 'Recycle',
-  3: 'Stopped'
+  3: 'Stopped',
+  4: 'Error'
 };
 
+var nStep;
 var state;
 var bins = [[], [], [], [], [], [], [], [], [], []];
 var curInstruction;
@@ -34,6 +36,7 @@ function resetState() {
   for (let i = 1; i < NUM_BINS; ++i) {
     bins[i] = [];
   }
+  nStep = 0;
   state = 0;
   curInstruction = undefined;
   curParam = undefined;
@@ -60,6 +63,7 @@ function populateHtmlBins() {
 }
 
 function populateHtmlStatement() {
+  $('#curr-step-num').text(nStep);
   $('#curr-state').text(STATE_NAMES[state]);
   $('#curr-instruction-wrapper').empty();
   if (typeof curInstruction !== 'undefined') {
@@ -105,6 +109,9 @@ function onReload() {
 
 function popBin(bin) {
   // Note: This function also updates the HTML.
+  if (bins[bin].length === 0) {
+    throw 'Attempting to get shirt from empty bin ' + bin;
+  }
   $('#bin' + bin).find('.shirt:first').remove();
   return bins[bin].shift();
 }
@@ -116,34 +123,42 @@ function pushBin(bin, color) {
 }
 
 function onStep() {
-  switch (state) {
-    case 0:  // Load
-      curInstruction = popBin(1);
-      curParam = popBin(1);
-      state = 1;  // Execute
-      populateHtmlStatement();
-      break;
+  try {
+    switch (state) {
+      case 0:  // Load
+        curInstruction = popBin(1);
+        curParam = popBin(1);
+        state = 1;  // Execute
+        populateHtmlStatement();
+        break;
 
-    case 1: // Execute
-      executeCurStatement();
-      if (state != 3) {
-        state = 2;  // Recycle
-      }
-      populateHtmlStatement();
-      break;
+      case 1: // Execute
+        executeCurStatement();
+        if (state != 3) {
+          state = 2;  // Recycle
+        }
+        populateHtmlStatement();
+        break;
 
-    case 2:  // Recycle
-      pushBin(2, curInstruction);
-      pushBin(2, curParam);
-      curInstruction = undefined;
-      curParam = undefined;
-      state = 0;
-      populateHtmlStatement();
-      break;
+      case 2:  // Recycle
+        pushBin(2, curInstruction);
+        pushBin(2, curParam);
+        curInstruction = undefined;
+        curParam = undefined;
+        state = 0;
+        ++nStep;
+        populateHtmlStatement();
+        break;
 
-    case 3:  // Stopped
-      populateHtmlStatement();
-      break;
+      case 3:  // Stopped
+      case 4:  // Error
+        populateHtmlStatement();
+        break;
+    }
+  } catch (err) {
+    reportMsg('Aborted: ' + err);
+    state = 4;
+    populateHtmlStatement();
   }
 }
 
