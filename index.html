@@ -23,47 +23,37 @@
     </div>
     <div id="buttons-wrapper">
       <div class="button">
-        <input id="button-reload" type="submit" value="⟳" onclick="onReload()">
+        <input id="button-reload" type="submit" value="Load"
+               onclick="onReload()">
       </div>
       <div class="button">
-        <input id="button-step" type="submit" value="▶" onclick="onStep()">
+        <input id="button-step" type="submit" value="Step" onclick="onStep()">
       </div>
-      <!-- <div class="button">
-        <input id="button-run" type="submit" value="▶▶">
-      </div> -->
     </div>
   </div>
-  <div id="termination-msg"></div>
+  <div id="termination-msg" class="hidden"></div>
   <div id="curr-statement-row">
     <div class="filler"></div>
     <div id="curr-statement-wrapper">
-      <div class="curr-statement-header"
-           style="grid-area: 1 / 1 / auto / auto;">
+      <div class="curr-statement-header">
         Step&nbsp;#
       </div>
-      <div class="curr-statement-header"
-           style="grid-area: 1 / 2 / auto / auto;">
+      <div class="curr-statement-header">
         State
       </div>
-      <div class="curr-statement-header"
-           style="grid-area: 1 / 3 / auto / auto;">
+      <div class="curr-statement-header">
         Instruction
       </div>
-      <div class="curr-statement-header"
-           style="grid-area: 1 / 4 / auto / auto;">
+      <div class="curr-statement-header">
         Parameter
       </div>
-      <div class="curr-statement-shirt-wrapper" id="curr-step-num"
-           style="grid-area: 2 / 1 / auto / auto;">
+      <div class="curr-statement-shirt-wrapper" id="curr-step-num">
       </div>
-      <div class="curr-statement-shirt-wrapper" id="curr-state"
-           style="grid-area: 2 / 2 / auto / auto;">
+      <div class="curr-statement-shirt-wrapper" id="curr-state">
       </div>
-      <div class="curr-statement-shirt-wrapper" id="curr-instruction-wrapper"
-           style="grid-area: 2 / 3 / auto / auto;">
+      <div class="curr-statement-shirt-wrapper" id="curr-instruction-wrapper">
       </div>
-      <div class="curr-statement-shirt-wrapper" id="curr-param-wrapper"
-           style="grid-area: 2 / 4 / auto / auto;">
+      <div class="curr-statement-shirt-wrapper" id="curr-param-wrapper">
       </div>
     </div>
     <div class="filler"></div>

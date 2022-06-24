@@ -21,12 +21,13 @@ function setup() {
   for (let i = 0; i < NUM_BINS; ++i) {
     let headerDiv = $('<div>');
     headerDiv.addClass('bin-header')
-    headerDiv.css('grid-area', '1 / ' + (i+1) + ' / auto / auto');
     headerDiv.text('Bin ' + i)
+    $('#bins').append(headerDiv);
+  }
+  for (let i = 0; i < NUM_BINS; ++i) {
     let binDiv = $('<div id="bin' + i + '">')
     binDiv.addClass('bin');
-    binDiv.css('grid-area', '2 / ' + (i+1) + ' / auto / auto');
-    $('#bins').append(headerDiv).append(binDiv);
+    $('#bins').append(binDiv);
   }
 }
 
@@ -41,7 +42,7 @@ function resetState() {
   curInstruction = undefined;
   curParam = undefined;
 
-  $('#termination-msg').text('');
+  $('#termination-msg').text('Temination message').addClass('hidden');
 }
 
 function makeShirtElem(color) {
@@ -68,10 +69,14 @@ function populateHtmlStatement() {
   $('#curr-instruction-wrapper').empty();
   if (typeof curInstruction !== 'undefined') {
     $('#curr-instruction-wrapper').append(makeShirtElem(curInstruction));
+  } else {
+    $('#curr-instruction-wrapper').append(makeShirtElem('H'));
   }
   $('#curr-param-wrapper').empty();
   if (typeof curParam !== 'undefined') {
     $('#curr-param-wrapper').append(makeShirtElem(curParam));
+  } else {
+    $('#curr-param-wrapper').append(makeShirtElem('H'));
   }
 }
 
@@ -87,7 +92,7 @@ $(document).ready(() => {
 });
 
 function reportMsg(msg) {
-  $('#termination-msg').text(msg);
+  $('#termination-msg').removeClass('hidden').text(msg);
 }
 
 function loadInstructionsFromInput() {
@@ -96,6 +101,7 @@ function loadInstructionsFromInput() {
     let color = parseInt(input[i])
     if (isNaN(color)) {
       reportMsg('Invalid input character: "' + input[i] + '"');
+      return;
     }
     bins[1].push(color);
   }

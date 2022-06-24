@@ -58,10 +58,11 @@ html, body {
   flex-grow: 1;
 }
 #curr-statement-wrapper {
-  width: 200px;
+  width: 260px;
   padding: 4px 0;
   text-align: center;
   display: grid;
+  grid-template-columns: repeat(4, 1fr);
   justify-items: center;
   align-items: center;
   column-gap: 10px;
@@ -73,6 +74,7 @@ html, body {
 #bins {
   padding: 20px 0 4px 0;
   display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
   justify-items: center;
   column-gap: 5px;
   row-gap: 5px;
@@ -128,4 +130,10 @@ html, body {
 .shirt9 {
   background-color: #000;
   color: #fff;
+}
+.shirtH {  /* hidden shirt */
+  visibility: hidden;
+}
+.hidden {
+  visibility: hidden;
 }
