@@ -22,7 +22,8 @@ def get_new_bins():
 
 
 def advance(bins: List[List[int]]) -> AdvanceResult:
-  if len(bins[1]) < 2:
+  if (len(bins[1]) < 2 or
+      len(bins[1]) == 2 and bins[1][0] == bins[1][1] == 1):
     return AdvanceResult.END_OF_INSTRUCTION_BIN_REACHED
 
   # Load
@@ -112,7 +113,7 @@ def smart_solver(num_shirts):
   num_valid_progs = 0
   num_solutions = 0
   bad_prefixes_by_len = collections.defaultdict(set)
-  for prefix in tqdm.tqdm(range(max_num // 1000)):
+  for prefix in tqdm.tqdm(range(max_num // 100)):
     is_bad_prefix = False
     prefix_str = str(prefix)
     for i in range(1, len(prefix_str) + 1):
@@ -122,8 +123,8 @@ def smart_solver(num_shirts):
     if is_bad_prefix:
       continue
     all_suffixes_failed = True
-    for suffix in range(1000):
-      program = prefix * 1000 + suffix
+    for suffix in range(100):
+      program = prefix * 100 + suffix
       bins = load_program(program)
       result = run(bins)
       if result == AdvanceResult.POPPED_EMPTY_BIN:
@@ -146,6 +147,8 @@ def smart_solver(num_shirts):
   print(f'To solve for {num_shirts} shirts:')
   print(f'Scanned {num_valid_progs} valid progs, found {num_solutions} '
         f'solutions and {num_bad_prefixes} bad prefixes.')
+  for i in range(4):
+    print(f'Completed prefixes of len {i}: {bad_prefixes_by_len[i]}')
 
 
 def main():
