@@ -1,8 +1,10 @@
 import collections
+import cProfile
 import enum
 import itertools
+import pstats
 import time
-from typing import List, Tuple
+from typing import List, Sequence, Tuple
 import random
 
 import tqdm
@@ -108,6 +110,33 @@ def solver():
         f'and {num_solutions} solutions.')
 
 
+num_valid_progs = 0
+num_solutions = 0
+
+
+def dfs_solver(num_shirts: int, prefix: Sequence[int] = ()):
+  global num_valid_progs, num_solutions
+  if len(prefix) > num_shirts: return
+  bins = get_new_bins()
+  bins[1] = list(prefix[::-1])
+  result = run(bins)
+  if result == AdvanceResult.POPPED_EMPTY_BIN:
+    return  # Invalid program.
+  elif result == AdvanceResult.END_OF_INSTRUCTION_BIN_REACHED:
+    # Recurse.
+    if not prefix:
+      for i in tqdm.tqdm(range(10)):
+        dfs_solver(num_shirts, prefix + (i,))
+    else:
+      for i in range(10):
+        dfs_solver(num_shirts, prefix + (i,))
+  else:  # result == AdvanceResult.TERMINATED
+    num_valid_progs += 1
+    if bins[9] == [3, 3, 3]:
+      num_solutions += 1
+      print(f'Found solution: {prefix}')
+
+
 def smart_solver(num_shirts):
   max_num = int('1' + ('0' * num_shirts))
   num_valid_progs = 0
@@ -147,18 +176,21 @@ def smart_solver(num_shirts):
   print(f'To solve for {num_shirts} shirts:')
   print(f'Scanned {num_valid_progs} valid progs, found {num_solutions} '
         f'solutions and {num_bad_prefixes} bad prefixes.')
-  for i in range(4):
-    print(f'Completed prefixes of len {i}: {bad_prefixes_by_len[i]}')
+  for i in range(1, 4):
+    print(f'Completed prefixes of len {i}: {sorted(bad_prefixes_by_len[i])}')
 
 
 def main():
   start_time = time.time()
-  smart_solver(10)
+  # cProfile.run('dfs_solver(7)', sort=pstats.SortKey.CUMULATIVE)
+  dfs_solver(9)
   end_time = time.time()
   print(f'Calculation took {end_time - start_time:.1f} seconds.')
+  print(f'Found {num_valid_progs} valid programs '
+        f'and {num_solutions} solutions.')
 
   # start_time = time.time()
-  # solver()
+  # smart_solver(8)
   # end_time = time.time()
   # print(f'Calculation took {end_time - start_time:.1f} seconds.')
 
