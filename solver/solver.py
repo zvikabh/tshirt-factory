@@ -2,6 +2,7 @@ import collections
 import cProfile
 import enum
 import itertools
+import multiprocessing
 import pstats
 import time
 from typing import List, Sequence, Tuple
@@ -110,31 +111,49 @@ def solver():
         f'and {num_solutions} solutions.')
 
 
-num_valid_progs = 0
-num_solutions = 0
-
-
 def dfs_solver(num_shirts: int, prefix: Sequence[int] = ()):
-  global num_valid_progs, num_solutions
-  if len(prefix) > num_shirts: return
+  num_valid_progs = 0
+  num_solutions = 0
+  if len(prefix) > num_shirts: return 0, 0
   bins = get_new_bins()
   bins[1] = list(prefix[::-1])
   result = run(bins)
   if result == AdvanceResult.POPPED_EMPTY_BIN:
-    return  # Invalid program.
+    return 0, 0  # Invalid program.
   elif result == AdvanceResult.END_OF_INSTRUCTION_BIN_REACHED:
     # Recurse.
-    if not prefix:
-      for i in tqdm.tqdm(range(10)):
-        dfs_solver(num_shirts, prefix + (i,))
-    else:
-      for i in range(10):
-        dfs_solver(num_shirts, prefix + (i,))
+    for i in range(10):
+      curr_valid_progs, curr_solutions = dfs_solver(num_shirts, prefix + (i,))
+      num_valid_progs += curr_valid_progs
+      num_solutions += curr_solutions
   else:  # result == AdvanceResult.TERMINATED
     num_valid_progs += 1
-    if bins[9] == [3, 3, 3]:
-      num_solutions += 1
+    if bins[9] == [3, 3]:
       print(f'Found solution: {prefix}')
+      return 1, 1
+
+  # Recurse.
+  for i in range(10):
+    curr_valid_progs, curr_solutions = dfs_solver(num_shirts, prefix + (i,))
+    num_valid_progs += curr_valid_progs
+    num_solutions += curr_solutions
+
+  return num_valid_progs, num_solutions
+
+
+def dfs_solver_multiprocess(num_shirts: int):
+  tasks = []
+  task_results = []
+  with multiprocessing.Pool() as pool:
+    for i in range(10):
+      tasks.append(pool.apply_async(dfs_solver, (num_shirts, (i,))))
+    for task in tqdm.tqdm(tasks):
+      task_results.append(task.get())
+    pool.close()
+    pool.join()
+  num_valid_progs = sum(result[0] for result in task_results)
+  num_solutions = sum(result[1] for result in task_results)
+  return num_valid_progs, num_solutions
 
 
 def smart_solver(num_shirts):
@@ -183,7 +202,7 @@ def smart_solver(num_shirts):
 def main():
   start_time = time.time()
   # cProfile.run('dfs_solver(7)', sort=pstats.SortKey.CUMULATIVE)
-  dfs_solver(9)
+  num_valid_progs, num_solutions = dfs_solver_multiprocess(7)
   end_time = time.time()
   print(f'Calculation took {end_time - start_time:.1f} seconds.')
   print(f'Found {num_valid_progs} valid programs '
