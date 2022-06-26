@@ -202,11 +202,17 @@ function executeCurStatement() {
       return;
 
     case 8:
+      if (bins[3].length === 0) {
+        throw 'Attempting to read shirt from empty bin 3';
+      }
       bins[bins[3][0]].reverse();
       populateHtmlBins();
       return;
 
     case 9:
+      if (bins[3].length === 0) {
+        throw 'Attempting to read shirt from empty bin 3';
+      }
       let targetBin = bins[3][0];
       let temp = bins[curParam];
       bins[curParam] = bins[targetBin];
