@@ -128,7 +128,7 @@ def dfs_solver(num_shirts: int, prefix: Sequence[int] = ()):
       num_solutions += curr_solutions
   else:  # result == AdvanceResult.TERMINATED
     num_valid_progs += 1
-    if bins[9] == [3, 3]:
+    if bins[9] == [3, 3, 3]:
       print(f'Found solution: {prefix}')
       return 1, 1
 
