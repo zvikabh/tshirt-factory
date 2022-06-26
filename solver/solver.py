@@ -1,20 +1,18 @@
+import collections
 import enum
 import itertools
 import time
-from typing import Tuple
+from typing import List, Tuple
 import random
+
+import tqdm
 
 
 class AdvanceResult(enum.Enum):
-  SUCCESS = 1
-  POPPED_EMPTY_STACK = 2
+  ADVANCE_SUCCESS = 0
+  TERMINATED = 1
+  POPPED_EMPTY_BIN = 2
   END_OF_INSTRUCTION_BIN_REACHED = 3
-
-
-class EndOfInstructionBinReached(Exception):
-  """This is a special type of 'pop empty bin' error because we want to allow
-  it while running a recursive solve."""
-  pass
 
 
 def get_new_bins():
@@ -23,9 +21,9 @@ def get_new_bins():
   return bins
 
 
-def advance(bins):
+def advance(bins: List[List[int]]) -> AdvanceResult:
   if len(bins[1]) < 2:
-    raise EndOfInstructionBinReached()
+    return AdvanceResult.END_OF_INSTRUCTION_BIN_REACHED
 
   # Load
   instruction = bins[1].pop()
@@ -33,38 +31,51 @@ def advance(bins):
 
   # Execute
   if instruction == 0:    # STOP
-    raise StopIteration()
+    return AdvanceResult.TERMINATED
   elif instruction == 1:  # LOAD
+    if not bins[param]:
+      return AdvanceResult.POPPED_EMPTY_BIN
     bins[3].append(bins[param].pop())
   elif instruction == 2:  # STORE
+    if not bins[3]:
+      return AdvanceResult.POPPED_EMPTY_BIN
     bins[param].append(bins[3].pop())
   elif instruction == 3:  # ADD
+    if not bins[3]:
+      return AdvanceResult.POPPED_EMPTY_BIN
     bins[3][-1] = (bins[3][-1] + param) % 10
   elif instruction == 4:  # MUL
+    if not bins[3]:
+      return AdvanceResult.POPPED_EMPTY_BIN
     bins[3][-1] = (bins[3][-1] * param) % 10
   elif 5 <= instruction <= 7:  # NOP
     pass
   elif instruction == 8:
+    if not bins[3]:
+      return AdvanceResult.POPPED_EMPTY_BIN
     bins[bins[3][-1]] = bins[bins[3][-1]][::-1]
   elif instruction == 9:
+    if not bins[3]:
+      return AdvanceResult.POPPED_EMPTY_BIN
     target_bin = bins[3][-1]
     temp_bin = bins[param]
     bins[param] = bins[target_bin]
     bins[target_bin] = temp_bin
   else:
-    raise RuntimeError(f'Invalid instruction: {instruction}')
+    raise RuntimeError(f'Invalid instruction')
 
   # Recycle
   bins[2].append(instruction)
   bins[2].append(param)
 
+  return AdvanceResult.ADVANCE_SUCCESS
 
-def run(bins):
+
+def run(bins: List[List[int]]) -> AdvanceResult:
   while True:
-    try:
-      advance(bins)
-    except StopIteration:
-      return
+    result = advance(bins)
+    if result != AdvanceResult.ADVANCE_SUCCESS:
+      return result
 
 
 def print_bins(bins):
@@ -72,7 +83,7 @@ def print_bins(bins):
     print(f'{i}: {cur_bin[::-1]}')
 
 
-def load_program(program: int):
+def load_program(program: int) -> List[List[int]]:
   bins = get_new_bins()
   while program:
     bins[1].append(program % 10)
@@ -83,14 +94,9 @@ def load_program(program: int):
 def solver():
   num_valid_progs = 0
   num_solutions = 0
-  for i in range(1000000):
-    if i % 1000000 == 0:
-      print(f'Checking program {i}')
+  for i in tqdm.tqdm(range(1000000000)):
     bins = load_program(i)
-    try:
-      run(bins)
-    except IndexError:
-      # Invalid program.
+    if run(bins) != AdvanceResult.TERMINATED:
       continue
     num_valid_progs += 1
     if bins[9] == [3, 3, 3]:
@@ -101,90 +107,57 @@ def solver():
         f'and {num_solutions} solutions.')
 
 
-# SUFFIXES = list(itertools.product(range(10), range(10), range(10)))
-SUFFIXES = list(itertools.product(range(10), range(10)))
-DISALLOWED_PREFIXES = [(1, 0, 0), (1, 0, 9, 1)]
-
-num_progs = 0
-num_valid_progs = 0
-num_solutions = 0
-checked = set()
-
-
-def recursive_solver(prefix: Tuple[int, ...], max_len: int) -> None:
-  global num_progs, num_valid_progs, num_solutions, checked
-  end_of_instruction_bin_reached = False
-  for suffix in SUFFIXES:
-    bins = get_new_bins()
-    program = prefix + suffix
-    if program in checked:
+def smart_solver(num_shirts):
+  max_num = int('1' + ('0' * num_shirts))
+  num_valid_progs = 0
+  num_solutions = 0
+  bad_prefixes_by_len = collections.defaultdict(set)
+  for prefix in tqdm.tqdm(range(max_num // 1000)):
+    is_bad_prefix = False
+    prefix_str = str(prefix)
+    for i in range(1, len(prefix_str) + 1):
+      if prefix_str[:i] in bad_prefixes_by_len[i]:
+        is_bad_prefix = True
+        break
+    if is_bad_prefix:
       continue
-    checked.add(program)
-    num_progs += 1
-    if len(program) > max_len:
-      continue
-    if any(program[:len(disallowed_prefix)] == disallowed_prefix
-           for disallowed_prefix in DISALLOWED_PREFIXES):
-      continue
-    bins[1] = list(program[::-1])
-    try:
-      run(bins)
-    except EndOfInstructionBinReached:
-      # Allow recursion into programs which are valid except for terminating
-      # without a Stop statement.
-      end_of_instruction_bin_reached = True
-    except IndexError:
-      continue  # Invalid program.
-    if random.random() < 1e-4:
-      if end_of_instruction_bin_reached:
-        print(f'Semi-valid program: {program}')
-      else:
-        print(f'Valid program: {program}')
-    num_valid_progs += 1
-    if bins[9] == [3, 3, 3]:
-      num_solutions += 1
-      if end_of_instruction_bin_reached:
-        print(f'Found semi-solution: {program}')
-      else:
+    all_suffixes_failed = True
+    for suffix in range(1000):
+      program = prefix * 1000 + suffix
+      bins = load_program(program)
+      result = run(bins)
+      if result == AdvanceResult.POPPED_EMPTY_BIN:
+        continue
+      all_suffixes_failed = False
+      if result == AdvanceResult.END_OF_INSTRUCTION_BIN_REACHED:
+        # Semi-valid program
+        continue
+      # Valid program
+      num_valid_progs += 1
+      if bins[9] == [3, 3, 3]:
+        num_solutions += 1
         print(f'Found solution: {program}')
-    recursive_solver(program, max_len)
+    if all_suffixes_failed:
+      bad_prefix = str(prefix)
+      bad_prefixes_by_len[len(bad_prefix)].add(bad_prefix)
 
-
-def test_run1():
-  bins = load_program(1033103310339900)
-  run(bins)
-  print_bins(bins)
-
-
-def test_run2():
-  bins = load_program(1131131139900)
-  run(bins)
-  print_bins(bins)
-
-
-def test_run3():
-  bins = load_program(10993199333)
-  run(bins)
-  print_bins(bins)
-
-
-def test_invalid_run():
-  bins = load_program(10)
-  run(bins)
+  num_bad_prefixes = sum(
+      len(bad_prefix) for bad_prefix in bad_prefixes_by_len.values())
+  print(f'To solve for {num_shirts} shirts:')
+  print(f'Scanned {num_valid_progs} valid progs, found {num_solutions} '
+        f'solutions and {num_bad_prefixes} bad prefixes.')
 
 
 def main():
-  global num_progs, num_valid_progs, num_solutions
   start_time = time.time()
-  recursive_solver((1, 0), max_len=10)
+  smart_solver(10)
   end_time = time.time()
-  print(f'Found {num_progs} programs, '
-        f'of which {num_valid_progs} were valid programs '
-        f'and {num_solutions} were solutions.')
   print(f'Calculation took {end_time - start_time:.1f} seconds.')
+
+  # start_time = time.time()
   # solver()
-  # test_run3()
-  # test_invalid_run()
+  # end_time = time.time()
+  # print(f'Calculation took {end_time - start_time:.1f} seconds.')
 
 
 if __name__ == '__main__':
